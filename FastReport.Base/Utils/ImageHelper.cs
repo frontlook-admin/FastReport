@@ -164,6 +164,7 @@ namespace FastReport.Utils
         {
             if (!String.IsNullOrEmpty(url))
             {
+                System.Net.ServicePointManager.SecurityProtocol = (SecurityProtocolType)(0xc0 | 0x300 | 0xc00);
                 using (WebClient web = new WebClient())
                 {
                     return web.DownloadData(url);

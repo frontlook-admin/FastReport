@@ -26,6 +26,7 @@ namespace FastReport.Engine
         private bool finalPass;
         private int firstReportPage;
         private bool isFirstReportPage;
+        private int pagesLimit = 0;
 
         #endregion Fields
 
@@ -343,16 +344,6 @@ namespace FastReport.Engine
             }
         }
 
-        private void InitializePages()
-        {
-            for (int i = 0; i < Report.Pages.Count; i++)
-            {
-                ReportPage page = Report.Pages[i] as ReportPage;
-                if (page != null)
-                    PreparedPages.AddSourcePage(page);
-            }
-        }
-
         private void PrepareToFirstPass(bool append)
         {
             finalPass = !Report.DoublePass;
@@ -385,6 +376,8 @@ namespace FastReport.Engine
             {
                 if (CanPrint(band))
                     result += (band.CanGrow || band.CanShrink) ? band.CalcHeight() : band.Height;
+                else if (FinalPass && !String.IsNullOrEmpty(band.VisibleExpression) && band.VisibleExpression.Contains("TotalPages"))
+                    result += (band.CanGrow || band.CanShrink) ? band.CalcHeight() : band.Height;
                 band = band.Child;
                 if (band != null && ((band as ChildBand).FillUnusedSpace || (band as ChildBand).CompleteToNRows != 0))
                     break;
@@ -414,9 +407,15 @@ namespace FastReport.Engine
             return Run(runDialogs, append, resetDataState, null);
         }
 
+        internal bool Run(bool runDialogs, bool append, bool resetDataState, int pagesLimit)
+        {
+            this.pagesLimit = pagesLimit;
+            return Run(runDialogs, append, resetDataState, null);
+        }
+
         internal bool Run(bool runDialogs, bool append, bool resetDataState, ReportPage page)
         {
-            date = DateTime.Now;
+            date = SystemFake.DateTime.Now;
             Report.SetOperation(ReportOperation.Running);
             ResetDesigningFlag();
 
@@ -457,13 +456,22 @@ namespace FastReport.Engine
                         PreparedPages.RemovePage(PreparedPages.Count - 1);
                     }
                 }
+
+                // Limit the prepared pages again because pagesLimit has better priority than Report.MaxPages.
+                if (pagesLimit > 0)
+                {
+                    while (PreparedPages.Count > pagesLimit)
+                    {
+                        PreparedPages.RemovePage(PreparedPages.Count - 1);
+                    }
+                }
             }
             return true;
         }
 
         internal void RunPhase1()
         {
-            date = DateTime.Now;
+            date = SystemFake.DateTime.Now;
             Report.SetOperation(ReportOperation.Running);
             ResetDesigningFlag();
             InitializeData();
@@ -496,6 +504,15 @@ namespace FastReport.Engine
                 if (Report.MaxPages > 0)
                 {
                     while (PreparedPages.Count > Report.MaxPages)
+                    {
+                        PreparedPages.RemovePage(PreparedPages.Count - 1);
+                    }
+                }
+
+                // Limit the prepared pages again because pagesLimit has better priority than Report.MaxPages.
+                if (pagesLimit > 0)
+                {
+                    while (PreparedPages.Count > pagesLimit)
                     {
                         PreparedPages.RemovePage(PreparedPages.Count - 1);
                     }

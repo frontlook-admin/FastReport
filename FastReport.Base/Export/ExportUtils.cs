@@ -266,7 +266,9 @@ namespace FastReport.Export
                     else if (crlf == CRLF.odt)
                         Result.Append("<text:line-break />");
                     else
-                        Result.Append("<br />");
+                    {
+                     Result.Append("<p style=\"margin-top:0px;margin-bottom:0px;\">");
+                    }
                     i++;
                 }
                 else if (text[i] == '\t' && crlf == CRLF.odt)
@@ -534,17 +536,7 @@ namespace FastReport.Export
 
         internal static string GetID()
         {
-            return Guid.NewGuid().ToString();
-        }
-
-        internal static void CopyStream(Stream source, Stream target)
-        {
-            source.Position = 0;
-            int bufflength = 2048;
-            byte[] buff = new byte[bufflength];
-            int i;
-            while ((i = source.Read(buff, 0, bufflength)) > 0)
-                target.Write(buff, 0, i);
+            return SystemFake.Guid.NewGuid().ToString();
         }
 
         internal static byte[] StringToByteArray(string source)

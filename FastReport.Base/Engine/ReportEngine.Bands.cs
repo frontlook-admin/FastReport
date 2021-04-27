@@ -209,17 +209,25 @@ namespace FastReport.Engine
             if (!String.IsNullOrEmpty(obj.VisibleExpression))
             {
                 object expression = null;
-                if (obj.VisibleExpression.StartsWith("[") && obj.VisibleExpression.EndsWith("]"))
+                // Calculate expressions with TotalPages only on FinalPass.
+                if (!obj.VisibleExpression.Contains("TotalPages") || FinalPass)
                 {
-                    expression = Report.Calc(obj.VisibleExpression.Substring(1, obj.VisibleExpression.Length - 2));
+                    expression = Report.Calc(Code.CodeUtils.FixExpressionWithBrackets(obj.VisibleExpression));
                 }
-                else
+                if (expression != null && expression is bool)
                 {
-                    expression = Report.Calc(obj.VisibleExpression);
-                }
-                if (expression is bool)
-                {
-                    obj.Visible = (bool)expression;
+                    if (!obj.VisibleExpression.Contains("TotalPages"))
+                    {
+                        obj.Visible = (bool)expression;
+                    }
+                    else if (FirstPass)
+                    {
+                        obj.Visible = true;
+                    }
+                    else
+                    {
+                        obj.Visible = (bool)expression;
+                    }
                 }
             }
 
@@ -227,14 +235,7 @@ namespace FastReport.Engine
             if (!String.IsNullOrEmpty(obj.ExportableExpression))
             {
                 object expression = null;
-                if (obj.ExportableExpression.StartsWith("[") && obj.ExportableExpression.EndsWith("]"))
-                {
-                    expression = Report.Calc(obj.ExportableExpression.Substring(1, obj.ExportableExpression.Length - 2));
-                }
-                else
-                {
-                    expression = Report.Calc(obj.ExportableExpression);
-                }
+                expression = Report.Calc(Code.CodeUtils.FixExpressionWithBrackets(obj.ExportableExpression));
                 if (expression is bool)
                 {
                     obj.Exportable = (bool)expression;
@@ -245,14 +246,7 @@ namespace FastReport.Engine
             if (!String.IsNullOrEmpty(obj.PrintableExpression))
             {
                 object expression = null;
-                if (obj.PrintableExpression.StartsWith("[") && obj.PrintableExpression.EndsWith("]"))
-                {
-                    expression = Report.Calc(obj.PrintableExpression.Substring(1, obj.PrintableExpression.Length - 2));
-                }
-                else
-                {
-                    expression = Report.Calc(obj.PrintableExpression);
-                }
+                expression = Report.Calc(Code.CodeUtils.FixExpressionWithBrackets(obj.PrintableExpression));
                 if (expression is bool)
                 {
                     obj.Printable = (bool)expression;
@@ -381,7 +375,7 @@ namespace FastReport.Engine
                 {
                     bandHeight = 0;
                 }
-                while (FreeSpace - bandHeight - band.Child.Height > 0)
+                while (FreeSpace - bandHeight - band.Child.Height >= 0)
                 {
                     float saveCurY = CurY;
                     ShowBand(band.Child);

@@ -5,11 +5,11 @@ using FastReport.Utils;
 
 namespace FastReport.Preview
 {
-  internal class SourcePages : IDisposable
+  internal partial class SourcePages : IDisposable
   {
     #region Fields
-    private List<ReportPage> pages;
-    private PreparedPages preparedPages;
+    private readonly List<ReportPage> pages;
+    private readonly PreparedPages preparedPages;
     #endregion
 
     #region Properties
@@ -25,6 +25,7 @@ namespace FastReport.Preview
     #endregion
 
     #region Private Methods
+
     private Base CloneObjects(Base source, Base parent)
     {
       if (source is ReportComponentBase && !(source as ReportComponentBase).FlagPreviewVisible)
@@ -33,27 +34,6 @@ namespace FastReport.Preview
       // create clone object and assign all properties from source
       string baseName = "";
       string objName;
-#if MONO
-      if (source is RichObject && (source as RichObject).ConvertRichText == true)
-      {
-        RichObject rich = source as RichObject;
-        float h;
-        List<ComponentBase> clone_list = rich.Convert2ReportObjects(out h);
-
-        int i = 1;
-        foreach(Base clone_item in clone_list)
-        {
-          baseName = clone_item.BaseName[0].ToString().ToLower();
-          clone_item.Name = rich.Name + "_" + i;
-          objName = "Page" + pages.Count.ToString() + "." + clone_item.Name;
-          clone_item.Alias = preparedPages.Dictionary.AddUnique(baseName, objName, clone_item);
-          source.Alias = clone_item.Alias;
-          clone_item.Parent = parent;
-          i++;
-        }
-        return null;
-      }
-#endif
       Base clone = Activator.CreateInstance(source.GetType()) as Base;
       using (XmlItem xml = new XmlItem())
       using (FRWriter writer = new FRWriter(xml))
@@ -88,7 +68,7 @@ namespace FastReport.Preview
       ObjectCollection childObjects = source.ChildObjects;
       foreach (Base c in childObjects)
       {
-        CloneObjects(c, clone);
+        CloneObjects(c, clone); 
       }
       clone.Parent = parent;
       return clone;

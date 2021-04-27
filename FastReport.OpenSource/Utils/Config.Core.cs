@@ -17,7 +17,6 @@
 
         /// <summary>
         /// Gets a value that determines whether to disable some functionality to run in web mode.
-        /// Set method does nothing.
         /// </summary>
         /// <remarks>
         /// Use this property if you use FastReport in ASP.Net. Set this property to <b>true</b> <b>before</b>
@@ -27,10 +26,11 @@
         {
             get
             {
-                return true;
+                return FWebMode;
             }
             set
             {
+                FWebMode = value;
             }
         }
 
@@ -41,28 +41,18 @@
         /// <summary>
         /// Does nothing
         /// </summary>
-        private static void RestoreUIStyle()
-        {
-        }
+        static partial void RestoreUIStyle();
 
         /// <summary>
         /// Does nothing
         /// </summary>
-        private static void SaveUIStyle()
-        {
-        }
+        static partial void SaveUIStyle();
 
-        private static void RestorePreviewSettings()
-        {
-        }
+        static partial void RestorePreviewSettings();
 
-        private static void SavePreviewSettings()
-        {
-        }
+        static partial void SavePreviewSettings();
 
-        private static void SaveExportOptions()
-        {
-        }
+        static partial void SaveExportOptions();
 
         private static void RestoreExportOptions()
         {

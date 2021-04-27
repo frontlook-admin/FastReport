@@ -458,8 +458,8 @@ namespace FastReport.Preview
                 doc.Root.SetProp("ReportInfo.Name", Report.ReportInfo.Name);
                 doc.Root.SetProp("ReportInfo.Author", Report.ReportInfo.Author);
                 doc.Root.SetProp("ReportInfo.Description", Report.ReportInfo.Description);                
-                doc.Root.SetProp("ReportInfo.Created", DateTime.Now.ToString());
-                doc.Root.SetProp("ReportInfo.Modified", DateTime.Now.ToString());
+                doc.Root.SetProp("ReportInfo.Created", SystemFake.DateTime.Now.ToString());
+                doc.Root.SetProp("ReportInfo.Modified", SystemFake.DateTime.Now.ToString());
                 doc.Root.SetProp("ReportInfo.CreatorVersion", Report.ReportInfo.CreatorVersion);                
 
                 XmlItem pages = doc.Root.Add();
@@ -525,16 +525,17 @@ namespace FastReport.Preview
         {
             Clear();
 
+            if (stream.Length == 0)
+                return;
+
             if (!stream.CanSeek)
             {
                 MemoryStream tempStream = new MemoryStream();
-                FileUtils.CopyStream(stream, tempStream);
+                const int BUFFER_SIZE = 32768;
+                stream.CopyTo(tempStream, BUFFER_SIZE);
                 tempStream.Position = 0;
                 stream = tempStream;
             }
-
-            if (stream.Length == 0)
-                return;
 
             bool compressed = Compressor.IsStreamCompressed(stream);
             if (compressed)

@@ -507,26 +507,12 @@ namespace FastReport
 
             if (!String.IsNullOrEmpty(VisibleExpression))
             {
-                if (VisibleExpression.StartsWith("[") && VisibleExpression.EndsWith("]"))
-                {
-                    expressions.Add(VisibleExpression.Substring(1, VisibleExpression.Length - 2));
-                }
-                else
-                {
-                    expressions.Add(VisibleExpression);
-                }
+                expressions.Add(Code.CodeUtils.FixExpressionWithBrackets(VisibleExpression));
             }
 
             if (!String.IsNullOrEmpty(PrintableExpression))
             {
-                if (PrintableExpression.StartsWith("[") && PrintableExpression.EndsWith("]"))
-                {
-                    expressions.Add(PrintableExpression.Substring(1, PrintableExpression.Length - 2));
-                }
-                else
-                {
-                    expressions.Add(PrintableExpression);
-                }
+                expressions.Add(Code.CodeUtils.FixExpressionWithBrackets(PrintableExpression));
             }
 
             return expressions.ToArray();
